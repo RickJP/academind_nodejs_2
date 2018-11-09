@@ -1,8 +1,7 @@
 const Product = require('../models/product');
 
-
 exports.getProducts = (req, res, next) => {
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
       res.render('shop/product-list', {
         prods: products,
@@ -38,7 +37,7 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
       res.render('shop/index', {
         prods: products,
@@ -108,22 +107,20 @@ exports.postCartDeleteProduct = (req, res, next) => {
   req.user
     .getCart()
     .then(cart => {
-      return cart.getProducts({ where: { id: prodId }});
+      return cart.getProducts({ where: { id: prodId } });
     })
     .then(products => {
       const product = products[0];
       return product.cartItem.destroy();
     })
-    .then (result => {
+    .then(result => {
       res.redirect('/cart');
     })
-    .catch(err => { console.log(err); })
-  
+    .catch(err => console.log(err));
 };
 
 exports.postOrder = (req, res, next) => {
   let fetchedCart;
-
   req.user
     .getCart()
     .then(cart => {
@@ -136,11 +133,12 @@ exports.postOrder = (req, res, next) => {
         .then(order => {
           return order.addProducts(
             products.map(product => {
-              product.orderItem = {quantity: product.cartItem.quantity};
+              product.orderItem = { quantity: product.cartItem.quantity };
               return product;
-          }));
+            })
+          );
         })
-        .catch(err => console.log(err) );
+        .catch(err => console.log(err));
     })
     .then(result => {
       return fetchedCart.setProducts(null);
@@ -148,21 +146,18 @@ exports.postOrder = (req, res, next) => {
     .then(result => {
       res.redirect('/orders');
     })
-    .catch(err => {
-      console.log(err);
-    })
+    .catch(err => console.log(err));
 };
 
 exports.getOrders = (req, res, next) => {
   req.user
-    .getOrders({ include: ['products']})
+    .getOrders({include: ['products']})
     .then(orders => {
       res.render('shop/orders', {
         path: '/orders',
         pageTitle: 'Your Orders',
         orders: orders
-    });
-  })
-  .catch(err => { console.log(err)});
+      });
+    })
+    .catch(err => console.log(err));
 };
-
